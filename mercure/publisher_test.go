@@ -66,11 +66,11 @@ func TestPublishCompleteUpdate(t *testing.T) {
 		assert.Equal(t, "go-mercure/dev", req.Header.Get("User-Agent"))
 		assert.Equal(t, "Bearer jwt-token", req.Header.Get("Authorization"))
 		assert.Equal(t, "application/x-www-form-urlencoded", req.Header.Get("Content-Type"))
-		assert.Equal(t, "93", req.Header.Get("Content-Length"))
+		assert.Equal(t, "89", req.Header.Get("Content-Length"))
 
 		b, err := ioutil.ReadAll(req.Body)
 		assert.Nil(t, err)
-		assert.Equal(t, "data=Hello+World&id=id&retry=%05&target=target1&topic=http%3A%2F%2Flocalhost%2Ftest&type=type", string(b))
+		assert.Equal(t, "data=Hello+World&id=id&private=on&retry=%05&topic=http%3A%2F%2Flocalhost%2Ftest&type=type", string(b))
 
 		rw.Write([]byte("uuid"))
 	}))
@@ -80,13 +80,11 @@ func TestPublishCompleteUpdate(t *testing.T) {
 		Topics: []string{
 			"http://localhost/test",
 		},
-		Data: []byte("Hello World"),
-		Targets: []string{
-			"target1",
-		},
-		Id:    "id",
-		Type:  "type",
-		Retry: 5,
+		Data:    []byte("Hello World"),
+		Private: true,
+		Id:      "id",
+		Type:    "type",
+		Retry:   5,
 	}
 	url, _ := url.Parse(server.URL)
 
@@ -119,41 +117,6 @@ func TestPublishUpdateWithMultipleTopics(t *testing.T) {
 			"http://localhost/test3",
 		},
 		Data: []byte("Hello World"),
-	}
-	url, _ := url.Parse(server.URL)
-
-	p := NewPublisher(url, "jwt-token", server.Client())
-	r, err := p.Publish(u)
-
-	assert.Nil(t, err)
-	assert.Equal(t, "uuid", r)
-}
-
-func TestPublishUpdateWithMultipleTargets(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		assert.Equal(t, "go-mercure/dev", req.Header.Get("User-Agent"))
-		assert.Equal(t, "Bearer jwt-token", req.Header.Get("Authorization"))
-		assert.Equal(t, "application/x-www-form-urlencoded", req.Header.Get("Content-Type"))
-		assert.Equal(t, "97", req.Header.Get("Content-Length"))
-
-		b, err := ioutil.ReadAll(req.Body)
-		assert.Nil(t, err)
-		assert.Equal(t, "data=Hello+World&target=target1&target=target2&target=target3&topic=http%3A%2F%2Flocalhost%2Ftest", string(b))
-
-		rw.Write([]byte("uuid"))
-	}))
-	defer server.Close()
-
-	u := Update{
-		Topics: []string{
-			"http://localhost/test",
-		},
-		Data: []byte("Hello World"),
-		Targets: []string{
-			"target1",
-			"target2",
-			"target3",
-		},
 	}
 	url, _ := url.Parse(server.URL)
 

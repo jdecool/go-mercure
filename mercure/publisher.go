@@ -18,7 +18,7 @@ type Publisher struct {
 type Update struct {
 	Topics  []string
 	Data    []byte
-	Targets []string
+	Private bool
 	Id      string
 	Type    string
 	Retry   int
@@ -86,8 +86,8 @@ func getData(u Update) (url.Values, error) {
 
 	d.Add("data", string(u.Data))
 
-	for _, target := range u.Targets {
-		d.Add("target", target)
+	if u.Private {
+		d.Add("private", "on")
 	}
 
 	if u.Id != "" {
